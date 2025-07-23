@@ -21,7 +21,7 @@ y_train = train["Class Index"]
 X_test = test["text"]
 y_test = test["Class Index"]
 
-vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
+vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7,ngram_range=(1,2))
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
