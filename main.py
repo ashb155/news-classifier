@@ -2,12 +2,19 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score
+import re
+
+def clean_text(text):
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    text = text.lower()
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
-train["text"] = train["Title"] + " " + train["Description"]
-test["text"] = test["Title"] + " " + test["Description"]
+train["text"] = (train["Title"] + " " + train["Description"]).apply(clean_text)
+test["text"] = (test["Title"] + " " + test["Description"]).apply(clean_text)
 
 X_train = train["text"]
 y_train = train["Class Index"]
