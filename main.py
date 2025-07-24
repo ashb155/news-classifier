@@ -8,6 +8,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag
 from nltk.corpus import wordnet
+import contractions
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -47,6 +48,9 @@ def get_wordnet_pos(tag):
 def clean_text(text):
     if not isinstance(text, str):
         return ""
+
+    text=contractions.fix(text)
+
     text = re.sub(r'[^a-zA-Z\s]', '', text)
     text = text.lower()
     text = re.sub(r'\s+', ' ', text).strip()
