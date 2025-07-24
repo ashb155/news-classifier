@@ -6,6 +6,8 @@ import re
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag
+from nltk.corpus import wordnet
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -23,22 +25,41 @@ try:
     nltk.data.find('tokenizers/punkt_tab')
 except LookupError:
     nltk.download('punkt_tab')
+try:
+    nltk.data.find('taggers/averaged_perceptron_tagger_eng')
+except LookupError:
+    nltk.download('averaged_perceptron_tagger_eng')
 
 lemmatizer = WordNetLemmatizer()
 
+def get_wordnet_pos(tag):
+    if tag.startswith('J'):
+        return wordnet.ADJ
+    elif tag.startswith('V'):
+        return wordnet.VERB
+    elif tag.startswith('N'):
+        return wordnet.NOUN
+    elif tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN
+
 def clean_text(text):
+    if not isinstance(text, str):
+        return ""
     text = re.sub(r'[^a-zA-Z\s]', '', text)
     text = text.lower()
     text = re.sub(r'\s+', ' ', text).strip()
     tokens = word_tokenize(text)
-    lemmatized_tokens = [lemmatizer.lemmatize(token) for token in tokens]
+    tagged_tokens = pos_tag(tokens)
+    lemmatized_tokens = [lemmatizer.lemmatize(word, get_wordnet_pos(tag)) for word, tag in tagged_tokens]
     return ' '.join(lemmatized_tokens)
 
 train = pd.read_csv("train.csv")
 test = pd.read_csv("test.csv")
 
-train["text"] = (train["Title"] + " " + train["Description"]).apply(clean_text)
-test["text"] = (test["Title"] + " " + test["Description"]).apply(clean_text)
+train["text"] = (train["Title"].fillna('') + " " + train["Description"].fillna('')).apply(clean_text)
+test["text"] = (test["Title"].fillna('') + " " + test["Description"].fillna('')).apply(clean_text)
 
 X_train = train["text"]
 y_train = train["Class Index"]
